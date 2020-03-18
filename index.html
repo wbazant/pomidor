@@ -1,24 +1,99 @@
-Enter Chat and press enter
-<div><input id=input placeholder=you-chat-here /></div>
+<!DOCTYPE html>
+<html>
+<title>Pomidor: The Game </title>
+<head>
+   
+<meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yegor256/tacit@gh-pages/tacit-css-1.5.1.min.css"/>
+</head>
+<body style="background-color:#edbba6;text-align:center;font-family: monospace;">
+<section id="welcome-window">
+<img src="https://static-s.aa-cdn.net/img/gp/20600012028085/pIKk9i9JXA9SLGAToaTRkoGN7t5e6BT_j3ab-DxNuKaKlQoBlszPVADYfT-25VLRuA=s300?v=1" alt="" itemprop="image">
+<h3>
+  The ultimate game of wit, patience, and skill
+<h3>
+<div>
+  <input id="player-name" placeholder="Enter player name" />
+</div>
+<button type="submit" id="join">Join</button>
+</section>
 
-Chat Output
-<div id=box></div>
+<section id="game-window" style="display:none;">
+<div><button id="say-pomidor">Say: pomidor</button></div>
+Or say something else 
+<br>
+<div><input id="say-something-else" placeholder="your message" /></div>
+<i><small>caution: saying something else might mean conceding under standard pomidor rules</small></i>
+<br>
+<div id="message-box" style="min-height:100px;max-height:400px;background:antiquewhite;border-radius:5px;text-align:left;overflow:scroll;";></div>
+</section>
+</body>
 
 <script src=https://cdn.pubnub.com/sdk/javascript/pubnub.4.0.11.min.js></script>
-<script>(function(){
+<script>
+function fade(element) {
+    var op = 1;  // initial opacity
+    var timer = setInterval(function () {
+        if (op <= 0.1){
+            clearInterval(timer);
+            element.style.display = 'none';
+        }
+        element.style.opacity = op;
+        element.style.filter = 'alpha(opacity=' + op * 100 + ")";
+        op -= op * 0.1;
+    }, 50);
+}
+function unfade(element) {
+    var op = 0.1;  // initial opacity
+    element.style.display = 'block';
+    var timer = setInterval(function () {
+        if (op >= 1){
+            clearInterval(timer);
+        }
+        element.style.opacity = op;
+        element.style.filter = 'alpha(opacity=' + op * 100 + ")";
+        op += op * 0.1;
+    }, 10);
+}
+
+(function(){
       var pubnub = new PubNub({ publishKey : 'pub-c-471b093b-d027-47ce-a583-17f8a7b736d7', subscribeKey : 'sub-c-567de6a8-68b1-11ea-a7c4-5e95b827fd71' });
       function $(id) { return document.getElementById(id); }
-      var box = $('box'), input = $('input'), channel = '10chat-demo';
+      var welcomeWindow = $('welcome-window'),
+          gameWindow = $('game-window'),
+          messageBox = $('message-box'),
+          playerNameInput = $('player-name'),
+          joinButton = $('join'),
+          sayPomidorButton = $('say-pomidor'),
+          saySomethingElseInput = $('say-something-else'),
+          channel = '10chat-demo';
+
       pubnub.addListener({
           message: function(obj) {
-              box.innerHTML = (''+obj.message).replace( /[<>]/g, '' ) + '<br>' + box.innerHTML
+              var playerName = document.getElementById('player-name').value;
+              messageBox.innerHTML = messageBox.innerHTML + ("<div><span>[ " + new Date().toLocaleString() + "] " +playerName +': </span> <span>' + obj.message) + '</span></div>';
+              messageBox.scrollTop = messageBox.scrollHeight;
           }});
       pubnub.subscribe({channels:[channel]});
-      input.addEventListener('keyup', function(e) {
+      joinButton.addEventListener('click', function(e) {
+         var playerName = document.getElementById('player-name').value;
+         if(playerName){
+           fade(welcomeWindow);
+           unfade(gameWindow);
+         } else {
+           alert("Please enter player name to proceed");
+         }
+      });
+      sayPomidorButton.addEventListener('click', function(e) {
+         pubnub.publish({channel : channel,message : "pomidor"});
+      });
+      saySomethingElseInput.addEventListener('keyup', function(e) {
           if ((e.keyCode || e.charCode) === 13) {
-            pubnub.publish({channel : channel,message : input.value,x : (input.value='')});
+            pubnub.publish({channel : channel,message : saySomethingElseInput.value});
+            saySomethingElseInput.value = "";
         }
       });
 })();</script>
 
+</html>
 
