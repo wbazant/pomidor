@@ -70,8 +70,8 @@ function unfade(element) {
 
       pubnub.addListener({
           message: function(obj) {
-              var playerName = document.getElementById('player-name').value;
-              messageBox.innerHTML = messageBox.innerHTML + ("<div><span>[ " + new Date().toLocaleString() + "] " +playerName +': </span> <span>' + obj.message) + '</span></div>';
+console.log(obj);
+              messageBox.innerHTML = messageBox.innerHTML + ("<div><span>[ " + new Date().toLocaleString() + "] " +obj.message[0]+': </span> <span>' + obj.message[1]) + '</span></div>';
               messageBox.scrollTop = messageBox.scrollHeight;
           }});
       pubnub.subscribe({channels:[channel]});
@@ -85,11 +85,11 @@ function unfade(element) {
          }
       });
       sayPomidorButton.addEventListener('click', function(e) {
-         pubnub.publish({channel : channel,message : "pomidor"});
+         pubnub.publish({channel : channel,message : [document.getElementById('player-name').value, "pomidor"]});
       });
       saySomethingElseInput.addEventListener('keyup', function(e) {
           if ((e.keyCode || e.charCode) === 13) {
-            pubnub.publish({channel : channel,message : saySomethingElseInput.value});
+            pubnub.publish({channel : channel,message : [document.getElementById('player-name').value, saySomethingElseInput.value]});
             saySomethingElseInput.value = "";
         }
       });
